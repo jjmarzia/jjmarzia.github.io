@@ -3,26 +3,25 @@
 <head>
   <meta charset="UTF-8">
   <title>marziale.tech</title>
-<style>
-  html, body {
-    margin: 0;
-    padding: 0;
-    height: 100%;
-    width: 100%;
-    background-color: black;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-  img {
-    max-width: 50vw;   /* max horizontal size */
-    max-height: 50vh;  /* prevent vertical overflow */
-    object-fit: contain;
-    display: block;
-  }
-</style>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      width: 100%;
+      background-color: black;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    object {
+      width: 75vw;     /* take up 75% of viewport width */
+      height: auto;    /* maintain PDF’s aspect ratio */
+      display: block;
+    }
+  </style>
 </head>
 <body>
-  <img src="assets/marzialeWhite.png" alt="marziale.tech logo">
+  <object data="assets/marzialeWhite.pdf" type="application/pdf"></object>
 </body>
 </html>
