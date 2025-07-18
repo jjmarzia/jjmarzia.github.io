@@ -17,14 +17,6 @@
       justify-content: center;
       align-items: flex-start;
       padding-top: 40px;
-      flex-direction: column; /* ensure GIF stacks above table */
-    }
-    img {
-      width: 90vw;
-      max-width: 800px;
-      height: auto;
-      display: block;
-      margin-bottom: 20px; /* space between GIF and table */
     }
     table {
       border-collapse: collapse;
@@ -65,11 +57,15 @@
       color: #00ffff;
       text-decoration: underline;
     }
+    .gif-inline {
+      width: 100%;
+      height: auto;
+      display: block;
+      margin-bottom: 15px; /* space between gif and table rows */
+    }
   </style>
 </head>
 <body>
-  <img src="/assets/putnamania.gif" alt="Putnamania Animation">
-
 <!--
 <div class="info">
   <strong>Airbnb:</strong> <a href="https://www.airbnb.com/rooms/38296451?check_out=2025-10-13&viralityEntryPoint=1&unique_share_id=F2ECB560-881C-4B23-ACC8-C88602BDC9D9&slcid=62f7c681a70946e186c411d4c1c0773a&s=76&adults=10&check">Duck Key House</a><br>
@@ -82,6 +78,10 @@
     <caption>
       <img src="/assets/putnamania.png" alt="Putnamania Logo" style="width: 100%; height: auto;">
     </caption>
+
+    <!-- 🟢 put gif right below caption -->
+    <img src="/assets/putnamania.gif" alt="Putnamania Animation" class="gif-inline">
+
     <thead>
       <tr>
         <th>Day</th>
