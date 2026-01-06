@@ -193,8 +193,6 @@
       "All hail Ditto Platinum.",
       "Powered by Pixamation dot com.",
       "The superior backup solution.",
-      "Tim, you are a legend.",
-      "Ditto Platinum. Excellence. Delivered.",
     ];
     
     btn.classList.add('playing');
@@ -206,16 +204,11 @@
         robotText.textContent = phrases[index];
         
         const utter = new SpeechSynthesisUtterance(phrases[index]);
-        utter.rate = 0.8;
-        utter.pitch = 0.2;
+        utter.rate = 1.0;
+        utter.pitch = 1.0;
         
         const voices = synth.getVoices();
-        const robotVoice = voices.find(v => 
-          v.name.includes('Zarvox') ||
-          v.name.includes('Fred') ||
-          v.name.includes('Trinoids') ||
-          v.name.includes('Cellos')
-        ) || voices[0];
+        const robotVoice = voices.find(v => v.name.includes('Trinoids')) || voices[0];
         
         if (robotVoice) utter.voice = robotVoice;
         
