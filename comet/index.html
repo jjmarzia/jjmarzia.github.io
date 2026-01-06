@@ -18,11 +18,65 @@
       align-items: center;
       font-family: -apple-system, BlinkMacSystemFont, sans-serif;
       color: white;
+      overflow: hidden;
+    }
+
+    .orbit-container {
+      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
 
     .container {
       text-align: center;
-      padding: 2rem;
+      padding: 3rem 4rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    .orbit-path {
+      position: absolute;
+      width: 320px;
+      height: 320px;
+      border-radius: 50%;
+      pointer-events: none;
+    }
+
+    .comet {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      background: white;
+      border-radius: 50%;
+      box-shadow: 0 0 10px 3px rgba(255,255,255,0.8), 0 0 20px 6px rgba(255,255,255,0.4);
+      animation: orbit 4s linear infinite;
+      offset-path: path('M 160,0 A 160,160 0 1,1 160,320 A 160,160 0 1,1 160,0');
+      offset-distance: 0%;
+    }
+
+    .comet::before {
+      content: '';
+      position: absolute;
+      width: 60px;
+      height: 4px;
+      background: linear-gradient(to left, rgba(255,255,255,0.8), rgba(255,255,255,0));
+      top: 50%;
+      right: 8px;
+      transform: translateY(-50%);
+      transform-origin: right center;
+      border-radius: 2px;
+    }
+
+    @keyframes orbit {
+      0% {
+        offset-distance: 0%;
+        offset-rotate: 0deg;
+      }
+      100% {
+        offset-distance: 100%;
+        offset-rotate: 0deg;
+      }
     }
 
     h1 {
@@ -92,49 +146,26 @@
   </style>
 </head>
 <body>
-  <div class="container">
-    <button class="tim-btn" id="timBtn" onclick="praiseForTim()">
-      🔊 All hail Pixamation
-    </button>
-    <h1>Comet Backup</h1>
-    <p class="version">v25.5.4 · macOS · 75 MB · v4 · Jan 5</p>
-    <a href="/downloads/Comet%20Backup%2025.5.4-signed.pkg" class="download">Download</a>
-    <p class="meta">Signed & Notarized</p>
+  <div class="orbit-container">
+    <div class="orbit-path">
+      <div class="comet"></div>
+    </div>
+    <div class="container">
+      <button class="tim-btn" id="timBtn" onclick="praiseForTim()">
+        🔊 All hail Pixamation
+      </button>
+      <h1>Comet Backup</h1>
+      <p class="version">v25.5.4 · macOS · 75 MB · v4 · Jan 5</p>
+      <a href="/downloads/Comet%20Backup%2025.5.4-signed.pkg" class="download">Download</a>
+      <p class="meta">Signed & Notarized</p>
+    </div>
   </div>
 <script>
-  let audioCtx = null;
-  let distortionNode = null;
-  
-  function makeDistortionCurve(amount) {
-    const samples = 44100;
-    const curve = new Float32Array(samples);
-    const deg = Math.PI / 180;
-    for (let i = 0; i < samples; i++) {
-      const x = (i * 2) / samples - 1;
-      curve[i] = ((3 + amount) * x * 20 * deg) / (Math.PI + amount * Math.abs(x));
-    }
-    return curve;
-  }
-  
-  function initAudio() {
-    if (!audioCtx) {
-      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      distortionNode = audioCtx.createWaveShaper();
-      distortionNode.curve = makeDistortionCurve(50);
-      distortionNode.oversample = '4x';
-      distortionNode.connect(audioCtx.destination);
-    }
-    if (audioCtx.state === 'suspended') {
-      audioCtx.resume();
-    }
-  }
-  
   function praiseForTim() {
     const btn = document.getElementById('timBtn');
     const synth = window.speechSynthesis;
     
     synth.cancel();
-    initAudio();
     
     const phrases = [
       "Attention. This is an important broadcast.",
@@ -147,68 +178,37 @@
     
     btn.classList.add('playing');
     
-    const robotConfigs = [
-      { rate: 0.8, pitch: 0.1, delay: 0 },
-      { rate: 0.85, pitch: 0.3, delay: 50 },
-      { rate: 0.75, pitch: 0.2, delay: 100 },
-    ];
-    
-    let completedCount = 0;
-    const totalUtterances = phrases.length * robotConfigs.length;
-    
-    function speakPhrase(phrase, config, onComplete) {
-      setTimeout(() => {
-        const utter = new SpeechSynthesisUtterance(phrase);
-        utter.rate = config.rate;
-        utter.pitch = config.pitch;
-        utter.volume = 0.7;
+    let index = 0;
+    function speakNext() {
+      if (index < phrases.length) {
+        const utter = new SpeechSynthesisUtterance(phrases[index]);
+        utter.rate = 0.8;
+        utter.pitch = 0.2;
         
         const voices = synth.getVoices();
-        const robotVoices = voices.filter(v => 
-          v.name.includes('Fred') ||
+        const robotVoice = voices.find(v => 
           v.name.includes('Zarvox') ||
+          v.name.includes('Fred') ||
           v.name.includes('Trinoids') ||
-          v.name.includes('Cellos') ||
-          v.name.includes('Whisper') ||
-          v.name.includes('Bad News')
-        );
+          v.name.includes('Cellos')
+        ) || voices[0];
         
-        if (robotVoices.length > 0) {
-          utter.voice = robotVoices[Math.floor(Math.random() * robotVoices.length)];
-        }
+        if (robotVoice) utter.voice = robotVoice;
         
-        utter.onend = onComplete;
+        utter.onend = () => {
+          index++;
+          setTimeout(speakNext, 200);
+        };
         synth.speak(utter);
-      }, config.delay);
-    }
-    
-    let index = 0;
-    function speakNextChorus() {
-      if (index < phrases.length) {
-        let finishedInChorus = 0;
-        
-        robotConfigs.forEach(config => {
-          speakPhrase(phrases[index], config, () => {
-            finishedInChorus++;
-            completedCount++;
-            
-            if (finishedInChorus === robotConfigs.length) {
-              index++;
-              setTimeout(speakNextChorus, 300);
-            }
-            
-            if (completedCount >= totalUtterances) {
-              btn.classList.remove('playing');
-            }
-          });
-        });
+      } else {
+        btn.classList.remove('playing');
       }
     }
     
     if (synth.getVoices().length === 0) {
-      synth.onvoiceschanged = speakNextChorus;
+      synth.onvoiceschanged = speakNext;
     } else {
-      speakNextChorus();
+      speakNext();
     }
   }
 </script>
