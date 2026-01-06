@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Comet Backup</title>
   <link rel="icon" href="/assets/starFavicon.ico" type="image/x-icon">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
   <style>
     html, body {
       margin: 0;
@@ -53,6 +56,7 @@
       animation: orbit 4s linear infinite;
       offset-path: path('M 160,0 A 160,160 0 1,1 160,320 A 160,160 0 1,1 160,0');
       offset-distance: 0%;
+      offset-rotate: auto;
     }
 
     .comet::before {
@@ -62,21 +66,36 @@
       height: 4px;
       background: linear-gradient(to left, rgba(255,255,255,0.8), rgba(255,255,255,0));
       top: 50%;
-      right: 8px;
+      left: auto;
+      right: 100%;
       transform: translateY(-50%);
-      transform-origin: right center;
       border-radius: 2px;
     }
 
     @keyframes orbit {
       0% {
         offset-distance: 0%;
-        offset-rotate: 0deg;
       }
       100% {
         offset-distance: 100%;
-        offset-rotate: 0deg;
       }
+    }
+
+    .robot-text {
+      font-family: 'Orbitron', monospace;
+      font-size: 0.85rem;
+      color: #0f0;
+      min-height: 1.5rem;
+      margin-bottom: 1rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      text-shadow: 0 0 10px rgba(0,255,0,0.5);
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .robot-text.visible {
+      opacity: 1;
     }
 
     h1 {
@@ -115,7 +134,7 @@
       padding: 0.5rem 1rem;
       border-radius: 4px;
       cursor: pointer;
-      margin-bottom: 2rem;
+      margin-bottom: 1.5rem;
       transition: all 0.2s;
       display: inline-flex;
       align-items: center;
@@ -151,6 +170,7 @@
       <div class="comet"></div>
     </div>
     <div class="container">
+      <div class="robot-text" id="robotText"></div>
       <button class="tim-btn" id="timBtn" onclick="praiseForTim()">
         🔊 All hail Pixamation
       </button>
@@ -163,6 +183,7 @@
 <script>
   function praiseForTim() {
     const btn = document.getElementById('timBtn');
+    const robotText = document.getElementById('robotText');
     const synth = window.speechSynthesis;
     
     synth.cancel();
@@ -177,10 +198,13 @@
     ];
     
     btn.classList.add('playing');
+    robotText.classList.add('visible');
     
     let index = 0;
     function speakNext() {
       if (index < phrases.length) {
+        robotText.textContent = phrases[index];
+        
         const utter = new SpeechSynthesisUtterance(phrases[index]);
         utter.rate = 0.8;
         utter.pitch = 0.2;
@@ -202,6 +226,8 @@
         synth.speak(utter);
       } else {
         btn.classList.remove('playing');
+        robotText.classList.remove('visible');
+        robotText.textContent = '';
       }
     }
     
