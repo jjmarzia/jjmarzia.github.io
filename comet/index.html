@@ -189,10 +189,10 @@
     synth.cancel();
     
     const phrases = [
-      "Attention. This is an important broadcast.",
-      "All hail Ditto Platinum.",
-      "Powered by Pixamation dot com.",
-      "The superior backup solution.",
+      { display: "Attention. This is an important broadcast.", speak: "Attention. This is an important broadcast." },
+      { display: "All hail Ditto Platinum.", speak: "All hail Ditto Platinum." },
+      { display: "Powered by Pixamation.com", speak: "Powered by Pix-uh-may-shun dot com." },
+      { display: "The superior backup solution.", speak: "The superior backup solution." },
     ];
     
     btn.classList.add('playing');
@@ -201,9 +201,9 @@
     let index = 0;
     function speakNext() {
       if (index < phrases.length) {
-        robotText.textContent = phrases[index];
+        robotText.textContent = phrases[index].display;
         
-        const utter = new SpeechSynthesisUtterance(phrases[index]);
+        const utter = new SpeechSynthesisUtterance(phrases[index].speak);
         utter.rate = 1.0;
         utter.pitch = 1.0;
         
