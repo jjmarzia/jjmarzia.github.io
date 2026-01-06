@@ -94,7 +94,7 @@
 <body>
   <div class="container">
     <button class="tim-btn" id="timBtn" onclick="praiseForTim()">
-      🔊 Message for Tim
+      🔊 All hail Pixamation
     </button>
     <h1>Comet Backup</h1>
     <p class="version">v25.5.4 · macOS · 75 MB · v4 · Jan 5</p>
@@ -102,12 +102,39 @@
     <p class="meta">Signed & Notarized</p>
   </div>
 <script>
+  let audioCtx = null;
+  let distortionNode = null;
+  
+  function makeDistortionCurve(amount) {
+    const samples = 44100;
+    const curve = new Float32Array(samples);
+    const deg = Math.PI / 180;
+    for (let i = 0; i < samples; i++) {
+      const x = (i * 2) / samples - 1;
+      curve[i] = ((3 + amount) * x * 20 * deg) / (Math.PI + amount * Math.abs(x));
+    }
+    return curve;
+  }
+  
+  function initAudio() {
+    if (!audioCtx) {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      distortionNode = audioCtx.createWaveShaper();
+      distortionNode.curve = makeDistortionCurve(50);
+      distortionNode.oversample = '4x';
+      distortionNode.connect(audioCtx.destination);
+    }
+    if (audioCtx.state === 'suspended') {
+      audioCtx.resume();
+    }
+  }
+  
   function praiseForTim() {
     const btn = document.getElementById('timBtn');
     const synth = window.speechSynthesis;
     
-    // Cancel any ongoing speech
     synth.cancel();
+    initAudio();
     
     const phrases = [
       "Attention. This is an important broadcast.",
@@ -120,39 +147,68 @@
     
     btn.classList.add('playing');
     
-    let index = 0;
-    function speakNext() {
-      if (index < phrases.length) {
-        const utter = new SpeechSynthesisUtterance(phrases[index]);
-        utter.rate = 0.85;
-        utter.pitch = 0.3;
+    const robotConfigs = [
+      { rate: 0.8, pitch: 0.1, delay: 0 },
+      { rate: 0.85, pitch: 0.3, delay: 50 },
+      { rate: 0.75, pitch: 0.2, delay: 100 },
+    ];
+    
+    let completedCount = 0;
+    const totalUtterances = phrases.length * robotConfigs.length;
+    
+    function speakPhrase(phrase, config, onComplete) {
+      setTimeout(() => {
+        const utter = new SpeechSynthesisUtterance(phrase);
+        utter.rate = config.rate;
+        utter.pitch = config.pitch;
+        utter.volume = 0.7;
         
-        // Try to get a robotic voice
         const voices = synth.getVoices();
-        const robotVoice = voices.find(v => 
-          v.name.includes('Samantha') || 
-          v.name.includes('Alex') || 
+        const robotVoices = voices.filter(v => 
           v.name.includes('Fred') ||
           v.name.includes('Zarvox') ||
-          v.name.includes('Cellos')
-        ) || voices[0];
-        if (robotVoice) utter.voice = robotVoice;
+          v.name.includes('Trinoids') ||
+          v.name.includes('Cellos') ||
+          v.name.includes('Whisper') ||
+          v.name.includes('Bad News')
+        );
         
-        utter.onend = () => {
-          index++;
-          setTimeout(speakNext, 200);
-        };
+        if (robotVoices.length > 0) {
+          utter.voice = robotVoices[Math.floor(Math.random() * robotVoices.length)];
+        }
+        
+        utter.onend = onComplete;
         synth.speak(utter);
-      } else {
-        btn.classList.remove('playing');
+      }, config.delay);
+    }
+    
+    let index = 0;
+    function speakNextChorus() {
+      if (index < phrases.length) {
+        let finishedInChorus = 0;
+        
+        robotConfigs.forEach(config => {
+          speakPhrase(phrases[index], config, () => {
+            finishedInChorus++;
+            completedCount++;
+            
+            if (finishedInChorus === robotConfigs.length) {
+              index++;
+              setTimeout(speakNextChorus, 300);
+            }
+            
+            if (completedCount >= totalUtterances) {
+              btn.classList.remove('playing');
+            }
+          });
+        });
       }
     }
     
-    // Ensure voices are loaded
     if (synth.getVoices().length === 0) {
-      synth.onvoiceschanged = speakNext;
+      synth.onvoiceschanged = speakNextChorus;
     } else {
-      speakNext();
+      speakNextChorus();
     }
   }
 </script>
